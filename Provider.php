@@ -84,7 +84,8 @@ class Provider extends AbstractProvider
     public function getAccessTokenResponse($code)
     {
         $response = $this->getHttpClient()->post($this->getBaseUrl().'/token', [
-            RequestOptions::HEADERS     => ['Authorization' => 'Basic '.base64_encode($this->clientId.':'.$this->clientSecret)],
+            RequestOptions::HEADERS     => ['Authorization' => 'Basic '.base64_encode($this->clientId.':'.$this->clientSecret),
+                'Content-Type' => 'application/x-www-form-urlencoded'],
             RequestOptions::FORM_PARAMS => $this->getTokenFields($code),
         ]);
 
