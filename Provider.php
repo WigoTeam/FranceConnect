@@ -64,25 +64,10 @@ class Provider extends AbstractProvider
     protected function getAuthUrl($state)
     {
         //It is used to prevent replay attacks
-        $this->parameters['nonce'] = Str::random(20);
+        //Minimum 22 characters in v2 version
+        $this->parameters['nonce'] = Str::random(25);
 
         return $this->buildAuthUrlFromBase($this->getBaseUrl().'/authorize', $state);
-        //https://fcp.integ01.dev-franceconnect.fr/api/v2/authorize
-        //?client_id=211286433e39cce01db448d80181bdfd005554b19cd51b3fe7943f6b3b86ab6e
-        //&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Flogin-callback
-        //&scope=openid+given_name+family_name+gender+birthplace+birthcountry+email+preferred_username
-        //&response_type=code
-        //&state=KKM5u5ObEBEX51QT97lhtRrYa1qBcbEQRjeG08zE
-        //&nonce=oJWgq6uRMihuB5zC49sG
-
-        //https://fcp.integ01.dev-franceconnect.fr/api/v2/authorize?
-        //client_id=211286433e39cce01db448d80181bdfd005554b19cd51b3fe7943f6b3b86ab6e
-        //&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Flogin-callback
-        //&scope=openid+given_name+family_name+gender+birthplace+birthcountry+email+preferred_username
-        //&response_type=code
-        //&state=gCNomXZI4n5lMkEtoLTuafwZRTYyeZZSPtmVN1vN
-        //&acr_values=eidas1
-        //&nonce=NRnETaGywvaDaF0997mg
     }
 
     /**
