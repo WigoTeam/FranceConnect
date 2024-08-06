@@ -11,7 +11,7 @@ use SocialiteProviders\Manager\OAuth2\AbstractProvider;
 class Provider extends AbstractProvider
 {
     /**
-     * API URLs.
+     * API URLs
      */
     public const PROD_BASE_URL = 'https://app.franceconnect.gouv.fr/api/v2';
 
