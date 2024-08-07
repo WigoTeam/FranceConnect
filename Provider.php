@@ -149,7 +149,7 @@ class Provider extends AbstractProvider
         Log::info("user");
         Log::info($user);
 
-        return json_decode((string) $user, true);
+        return $user;
     }
 
     private function getKeys()
