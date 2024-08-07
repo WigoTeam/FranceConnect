@@ -84,32 +84,12 @@ class Provider extends AbstractProvider
      */
     public function getAccessTokenResponse($code)
     {
-        /*$response = $this->getHttpClient()->post($this->getBaseUrl().'/token', [
-            RequestOptions::HEADERS     => ['Authorization' => 'Basic '.base64_encode($this->clientId.':'.$this->clientSecret),
-                'Content-Type' => 'application/x-www-form-urlencoded'],
+        $response = $this->getHttpClient()->post($this->getBaseUrl().'/token', [
+            RequestOptions::HEADERS     => ['Content-Type' => 'application/x-www-form-urlencoded'],
             RequestOptions::FORM_PARAMS => $this->getTokenFields($code),
         ]);
 
-        return json_decode((string) $response->getBody(), true);*/
-        try {
-            $response = $this->getHttpClient()->post($this->getBaseUrl().'/token', [
-                RequestOptions::HEADERS => [
-                    'Authorization' => 'Basic ' . base64_encode($this->clientId . ':' . $this->clientSecret),
-                    'Content-Type' => 'application/x-www-form-urlencoded', // Explicitly set Content-Type
-                ],
-                RequestOptions::FORM_PARAMS => $this->getTokenFields($code),
-                RequestOptions::DEBUG => true, // Enable debugging
-            ]);
-
-            $body = json_decode((string) $response->getBody(), true);
-            return $body;
-        } catch (\Exception $e) {
-
-            if ($e->hasResponse()) {
-                return $e->getResponse()->getBody()->getContents();
-            }
-            throw $e;
-        }
+        return json_decode((string) $response->getBody(), true);
     }
 
     /**
