@@ -6,6 +6,10 @@ use GuzzleHttp\RequestOptions;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Two\InvalidStateException;
+use Lcobucci\JWT\Configuration;
+use Lcobucci\JWT\Signer\Ecdsa\Sha256;
+use Lcobucci\JWT\Signer\Key\InMemory;
+use Lcobucci\JWT\Validation\Constraint\SignedWith;
 use SocialiteProviders\Manager\OAuth2\AbstractProvider;
 use Illuminate\Support\Facades\Log;
 
@@ -137,8 +141,85 @@ class Provider extends AbstractProvider
         Log::info("user by token response");
         Log::info((string) $response->getBody());
 
+        // Verify signature of user info with the keys
+        $keys = $this->getKeys();
+
+        Log::info("keys");
+        Log::info($keys);
+
+        $user = $this->decodeJwt((string) $response->getBody(), $keys);
+
+        Log::info("user");
+        Log::info($user);
+
+        return json_decode((string) $user, true);
+    }
+
+    private function getKeys()
+    {
+        $response = $this->getHttpClient()->get($this->getBaseUrl().'/jwks');
+
         return json_decode((string) $response->getBody(), true);
     }
+
+    private function decodeJwt($jwt, $keys)
+    {
+        Log::info("key in decode : ");
+        Log::info($keys['keys'][0]);
+        // Using the first key retrieved: ES256 algorithm
+        $formattedKey = $this->generatePemFromJwk($keys['keys'][0]);
+
+        // Set up JWT configuration
+        $configuration = Configuration::forAsymmetricSigner(
+            Sha256::create(),
+            InMemory::empty(),            // No private key needed for verification
+            InMemory::plainText($formattedKey)  // Public key for verification
+        );
+
+        // Parse the token
+        $token = $configuration->parser()->parse($jwt);
+
+        // Validate the signature
+        $isVerified = $configuration->validator()->validate(
+            $token,
+            new SignedWith(
+                Sha256::create(),
+                InMemory::plainText($formattedKey)
+            )
+        );
+
+        if ($isVerified) {
+            // Token is valid, get the claims
+            $claims = $token->claims()->all();
+            Log::info("claims");
+            Log::info($claims);
+            return $claims;
+        } else {
+            // Invalid token
+            Log::info("Invalid token");
+        }
+    }
+
+    private function generatePemFromJwk($jwk) {
+        $x = $this->base64url_decode($jwk['x']);
+        $y = $this->base64url_decode($jwk['y']);
+
+        // Build the uncompressed public key (04 indicates uncompressed)
+        $publicKey = "\x04" . $x . $y;
+
+        // Convert to PEM format
+        $pem = "-----BEGIN PUBLIC KEY-----\n"
+            . chunk_split(base64_encode($publicKey), 64, "\n")
+            . "-----END PUBLIC KEY-----";
+
+        return $pem;
+    }
+
+    private function base64url_decode($data) {
+        $base64 = strtr($data, '-_', '+/');
+        return base64_decode($base64);
+    }
+
 
     /**
      * {@inheritdoc}
