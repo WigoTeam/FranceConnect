@@ -7,6 +7,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Two\InvalidStateException;
 use SocialiteProviders\Manager\OAuth2\AbstractProvider;
+use Illuminate\Support\Facades\Log;
 
 class Provider extends AbstractProvider
 {
@@ -89,6 +90,9 @@ class Provider extends AbstractProvider
             RequestOptions::FORM_PARAMS => $this->getTokenFields($code),
         ]);
 
+        Log::info("access token response ");
+        Log::info((string) $response->getBody());
+
         return json_decode((string) $response->getBody(), true);
     }
 
@@ -121,11 +125,17 @@ class Provider extends AbstractProvider
      */
     protected function getUserByToken($token)
     {
+        Log::info("get user by token");
+        Log::info($token);
+
         $response = $this->getHttpClient()->get($this->getBaseUrl().'/userinfo', [
             RequestOptions::HEADERS => [
                 'Authorization' => 'Bearer '.$token,
             ],
         ]);
+
+        Log::info("user by token response");
+        Log::info((string) $response->getBody());
 
         return json_decode((string) $response->getBody(), true);
     }
@@ -139,11 +149,7 @@ class Provider extends AbstractProvider
             'id'                     => $user['sub'],
             'given_name'             => $user['given_name'],
             'family_name'            => $user['family_name'],
-            'gender'                 => $user['gender'],
-            'birthplace'             => $user['birthplace'],
-            'birthcountry'           => $user['birthcountry'],
-            'email'                  => $user['email'],
-            'preferred_username'     => $user['preferred_username'],
+            'gender'                 => $user['gender']
         ]);
     }
 
