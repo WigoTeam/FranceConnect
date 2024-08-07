@@ -207,9 +207,16 @@ class Provider extends AbstractProvider
         // Build the uncompressed public key (04 indicates uncompressed)
         $publicKey = "\x04" . $x . $y;
 
+        // Define the ASN.1 structure for the public key
+        $asn1Structure = "\x30" . "\x59" . // SEQUENCE and length
+            "\x30" . "\x13" . // SEQUENCE and length
+            "\x06" . "\x07" . "\x2A" . "\x86" . "\x48" . "\xCE" . "\x3D" . "\x02" . "\x01" . // OBJECT IDENTIFIER (1.2.840.10045.2.1 - ecPublicKey)
+            "\x06" . "\x08" . "\x2A" . "\x86" . "\x48" . "\xCE" . "\x3D" . "\x03" . "\x01" . "\x07" . // OBJECT IDENTIFIER (1.2.840.10045.3.1.7 - P-256 curve)
+            "\x03" . "\x42" . "\x00" . $publicKey; // BIT STRING with public key
+
         // Convert to PEM format
         $pem = "-----BEGIN PUBLIC KEY-----\n"
-            . chunk_split(base64_encode($publicKey), 64, "\n")
+            . chunk_split(base64_encode($asn1Structure), 64, "\n")
             . "-----END PUBLIC KEY-----";
 
         return $pem;
