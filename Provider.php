@@ -94,9 +94,6 @@ class Provider extends AbstractProvider
             RequestOptions::FORM_PARAMS => $this->getTokenFields($code),
         ]);
 
-        Log::info("access token response ");
-        Log::info((string) $response->getBody());
-
         return json_decode((string) $response->getBody(), true);
     }
 
@@ -129,25 +126,15 @@ class Provider extends AbstractProvider
      */
     protected function getUserByToken($token)
     {
-        Log::info("get user by token");
-        Log::info($token);
-
         $response = $this->getHttpClient()->get($this->getBaseUrl().'/userinfo', [
             RequestOptions::HEADERS => [
                 'Authorization' => 'Bearer '.$token,
             ],
         ]);
 
-        Log::info("user by token response");
-        Log::info((string) $response->getBody());
-
-        // Verify signature of user info with the keys
+        // Verify signature of user info with the public key
         $keys = $this->getKeys();
-
         $user = $this->decodeJwt((string) $response->getBody(), $keys);
-
-        Log::info("user");
-        Log::info($user);
 
         return $user;
     }
@@ -161,13 +148,8 @@ class Provider extends AbstractProvider
 
     private function decodeJwt($jwt, $keys)
     {
-        Log::info("key in decode : ");
-        Log::info($keys['keys'][0]);
         // Using the first key retrieved: ES256 algorithm
         $formattedKey = $this->generatePemFromJwk($keys['keys'][0]);
-
-        Log::info("formatted key");
-        Log::info($formattedKey);
 
         // Set up JWT configuration
         $configuration = Configuration::forAsymmetricSigner(
@@ -191,12 +173,10 @@ class Provider extends AbstractProvider
         if ($isVerified) {
             // Token is valid, get the claims
             $claims = $token->claims()->all();
-            Log::info("claims");
-            Log::info($claims);
             return $claims;
         } else {
             // Invalid token
-            Log::info("Invalid token");
+            Log::error("Invalid token");
         }
     }
 
