@@ -144,9 +144,6 @@ class Provider extends AbstractProvider
         // Verify signature of user info with the keys
         $keys = $this->getKeys();
 
-        Log::info("keys");
-        Log::info($keys);
-
         $user = $this->decodeJwt((string) $response->getBody(), $keys);
 
         Log::info("user");
@@ -169,10 +166,13 @@ class Provider extends AbstractProvider
         // Using the first key retrieved: ES256 algorithm
         $formattedKey = $this->generatePemFromJwk($keys['keys'][0]);
 
+        Log::info("formatted key");
+        Log::info($formattedKey);
+
         // Set up JWT configuration
         $configuration = Configuration::forAsymmetricSigner(
-            Sha256::create(),
-            InMemory::empty(),            // No private key needed for verification
+            new Sha256(),
+            InMemory::plainText($formattedKey),            // False private key that won't be needed for verification
             InMemory::plainText($formattedKey)  // Public key for verification
         );
 
@@ -183,7 +183,7 @@ class Provider extends AbstractProvider
         $isVerified = $configuration->validator()->validate(
             $token,
             new SignedWith(
-                Sha256::create(),
+                new Sha256(),
                 InMemory::plainText($formattedKey)
             )
         );
