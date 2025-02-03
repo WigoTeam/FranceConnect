@@ -217,7 +217,10 @@ class Provider extends AbstractProvider
             'id'                     => $user['sub'],
             'given_name'             => $user['given_name'],
             'family_name'            => $user['family_name'],
-            'gender'                 => $user['gender']
+            'gender'                 => $user['gender'],
+            'birthplace'             => $user['birthplace'],
+            'birthcountry'           => $user['birthcountry'],
+            'birthdate'               => $user['birthdate'],
         ]);
     }
 
