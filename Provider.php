@@ -174,7 +174,8 @@ class Provider extends AbstractProvider
             // Token is valid, get the claims
             $claims = $token->claims()->all();
             return $claims;
-        } else {
+        } 
+        else {
             // Invalid token
             Log::error("Invalid token");
         }
